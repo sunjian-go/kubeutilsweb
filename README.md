@@ -25,6 +25,7 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 # Dockerfile
+#kubeagent.yaml在项目根目录
 ```
 FROM nginx
 COPY dist /usr/share/nginx/html/dist
