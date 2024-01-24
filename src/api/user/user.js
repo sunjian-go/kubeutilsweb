@@ -7,3 +7,9 @@ export function login(userData) {
     data: userData,
   });
 }
+export function authCode() {
+  return httpClient({
+    method: "get",
+    url: "/authformula",
+  });
+}
