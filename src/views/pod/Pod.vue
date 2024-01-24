@@ -790,11 +790,11 @@ import common from "../common/Config";
 // 引入css和js是为了该组件的外观展示
 import { getNamespacesReq } from "@/api/namespace/namespace";
 import {
-  downloadFile,
-  getContainerPath,
-  getContainersReq,
-  getPodsReq,
-  getUploadHistory
+downloadFile,
+getContainerPath,
+getContainersReq,
+getPodsReq,
+getUploadHistory
 } from "@/api/pod/pod";
 import "xterm/css/xterm.css";
 import "xterm/lib/xterm.js";
@@ -832,7 +832,7 @@ export default {
       },
       uploadFiles: [],
       uploadUri: "",
-      uploadUribak: common.UploadUrl,
+      uploadUribak:  "http://"+Cookies.get("host")+":"+Cookies.get("port")+"/api/upload",
       dialogVisible: false,
       apploading: true,
       namespaceValue: "",
@@ -870,6 +870,7 @@ export default {
       yamlDialog: false,
       contentYaml: "",
       cmOptions: common.cmOptions,
+      k8sTerminalWs: "ws://"+Cookies.get("host")+":"+Cookies.get("port")+"/api/ws",
       //获取pod详情
       getPodDetailData: {
         // url: common.K8sGetPodDetail,
@@ -1363,7 +1364,7 @@ export default {
 
       //定义websocket连接地址
       let terminalWsUrl =
-        common.k8sTerminalWs +
+        this.k8sTerminalWs +
         "?pod_name=" +
         this.podinfo.podName +
         "&container_name=" +
@@ -1479,7 +1480,7 @@ export default {
     initGetLogSocket(row) {
       console.log("准备：", row);
       let getlogWsUrl =
-        common.k8sTerminalWs +
+        this.k8sTerminalWs +
         "?container_name=" +
         row.spec.containers[0].name +
         "&pod_name=" +

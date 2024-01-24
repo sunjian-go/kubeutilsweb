@@ -68,9 +68,9 @@
   
   <script>
   import { login } from "@/api/user/user";
-  import Cookies from "js-cookie";
-  import moment from "moment";
-  import common from "../common/Config";
+import Cookies from "js-cookie";
+import moment from "moment";
+import common from "../common/Config";
   export default {
     data() {
       return {
@@ -143,7 +143,7 @@
             Cookies.set("host", this.wshost);
             Cookies.set("port", this.wsport);
             console.log("token 获取：",Cookies.get("token"))
-            console.log("asasasas:",Cookies.get("host"),Cookies.get("port"))
+            // console.log("asasasas:",Cookies.get("host"),Cookies.get("port"))
             //跳转至根路径
             this.$router.push("/home");
             this.$message.success({
