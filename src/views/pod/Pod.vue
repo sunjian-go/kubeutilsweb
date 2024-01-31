@@ -106,7 +106,6 @@
             class="dataCard"
             shadow="never"
             :body-style="{ padding: '10px' }"
-            style="height: 100%"
           >
             <div>
               <!-- row-key 用来定义行数据的key，结合expand-row-keys使用，往expandKeys中增加key来展开行 ,getRowKeys方法里面自带一个参数代表当前行对象-->
@@ -1614,6 +1613,9 @@ export default {
         })
         .catch((res) => {
           console.log("获取pod失败：", res.err);
+          this.$message.error({
+            message:res.err
+          })
           this.podTotal = 0;
           // this.podList = "";
         })

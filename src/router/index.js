@@ -45,11 +45,11 @@ const routes = [
         component: () => import("@/views/pod/Pod.vue"), //视图组件
       },
       {
-        path: "/test", //视图,访问子页面的时候会带上layout布局页面
-        name: "其他",
+        path: "/node", //视图,访问子页面的时候会带上layout布局页面
+        name: "node",
         icon: "odometer", //图标
-        meta: { title: "test", requireAuth: true },
-        component: () => import("@/views/pod/test.vue"), //视图组件
+        meta: { title: "node", requireAuth: true },
+        component: () => import("@/views/node/node.vue"), //视图组件
       },
     ],
   },

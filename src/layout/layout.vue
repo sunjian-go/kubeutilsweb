@@ -173,7 +173,7 @@
               /></el-icon>
               <!-- 说明 -->
               <span style="color: darkgray; margin-left: 5px">
-                2023 adoo devops</span
+                2024 devops kubeutils</span
               >
             </div>
           </el-footer>
