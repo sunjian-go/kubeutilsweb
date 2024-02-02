@@ -36,6 +36,7 @@ apiVersion: v1
 data:
   conf.ini: |-
     [server]
+    model = k8s
     server_addr = 1.1.1.1      
     port = 8999                      
 
@@ -73,7 +74,7 @@ spec:
         workload.user.cattle.io/workloadselector: deployment-middleware-kubeagent
     spec:
       containers:
-      - image: harbor-tj.ts-it.cn:63333/kubeutils/kubeagent:v1.1
+      - image: harbor-tj.ts-it.cn:63333/kubeutils/kubeagent-packet:v1.0
         imagePullPolicy: IfNotPresent
         name: kubeagent
         ports:
