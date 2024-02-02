@@ -21,7 +21,10 @@
                       <el-col :span="20">
                         <div v-if="data.status == 'active'">
                           集群：<span
-                            @click="jumpWorkflow(data.cluster_name)"
+                            @click="
+                              opt_dialog = true;
+                              jump(data.cluster_name);
+                            "
                             style="color: rgb(29, 122, 243)"
                             class="cluster"
                             >{{ data.cluster_name }}</span
@@ -29,7 +32,10 @@
                         </div>
                         <div v-if="data.status == 'inactive' || !data.status">
                           集群：<span
-                            @click="jumpWorkflow(data.cluster_name)"
+                            @click="
+                              opt_dialog = true;
+                              jump(data.cluster_name);
+                            "
                             style="color: red"
                             class="cluster"
                             >{{ data.cluster_name }}</span
@@ -46,7 +52,10 @@
                         <el-image
                           :src="logo"
                           class="logocl"
-                          @click="jumpWorkflow(data.cluster_name)"
+                          @click="
+                            opt_dialog = true;
+                            jump(data.cluster_name);
+                          "
                         ></el-image>
                       </el-col>
                     </el-row>
@@ -177,9 +186,11 @@
     v-model="cluster_dialog"
     title="添加集群"
     width="40%"
-    style="border-radius: 15px"
+    style="border-radius: 15px;margin-top:50px"
   >
     <div>
+      <span style="font-weight: bold">部署agent服务（仅需部署一个节点）</span
+      ><br /><br />
       <span>在你的master节点执行以下命令：</span>
       <el-input
         ref="inputcmd1"
@@ -213,13 +224,22 @@
         </svg> </el-button
       ><br />
       <div style="margin-top: 14px; width: 90%">
-        <span>修改yaml中[configMap]中agent块的参数为实际参数，例如：</span>
+        <span>修改yaml中[configMap]中data块的参数为实际参数，例如：</span>
         <div>
           <el-card shadow="never" style="margin-top: 4px">
+            <span>data:</span><br />
+            <span>conf.ini: |-</span><br />
+            <span>[server]</span><br />
+            <span>model = k8s #部署方式(分docker和k8s两种，按需修改)</span
+            ><br />
+            <span>server_addr = 1.1.1.1 #server端地址</span><br />
+            <span>port = 8999 #server端端口</span><br /><br />
             <span>[agent]</span><br />
-            <span>cluster_name = zibo #地市名</span><br />
-            <span>agent_addr = 172.20.17.153 #实际暴露出去的地址</span><br />
-            <span>port = 30081 #实际暴露出去的端口</span>
+            <span>cluster_name = test #地市名</span><br />
+            <span>agent_addr = 2.2.2.2 #实际暴露出去的地址</span><br />
+            <span
+              >port = 8081 #实际暴露出去的端口(service的端口也要同步改)</span
+            ><br /><br />
           </el-card>
         </div>
       </div>
@@ -257,9 +277,74 @@
               d="M608 360H288a32 32 0 0 0 0 64h320a32 32 0 1 0 0-64zM608 520H288a32 32 0 1 0 0 64h320a32 32 0 1 0 0-64zM480 678.656H288a32 32 0 1 0 0 64h192a32 32 0 1 0 0-64z"
               p-id="7377"
             ></path>
-          </svg>
-        </el-button>
+          </svg> </el-button
+        ><br />
       </div>
+      <br><span style="font-weight: bold">部署抓包插件（集群中每个节点都需要部署）</span
+      ><br /><br />
+      <span>在每个节点执行以下命令：</span>
+      <el-input
+        ref="plugincmd1"
+        v-model="inputcmd3"
+        style="width: 90%; margin-top: 4px"
+        @input="inputcmd3 == inputcmdbak3 ? _ : (inputcmd3 = inputcmdbak3)"
+      />
+      <el-button @click="copyToClipboard('plugincmd1')" style="margin-top: 4px">
+        <svg
+          t="1705980328555"
+          style="width: 20px; height: 25px"
+          viewBox="0 0 1024 1024"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          p-id="7374"
+          width="200"
+          height="200"
+        >
+          <path
+            d="M720 192h-544A80.096 80.096 0 0 0 96 272v608C96 924.128 131.904 960 176 960h544c44.128 0 80-35.872 80-80v-608C800 227.904 764.128 192 720 192z m16 688c0 8.8-7.2 16-16 16h-544a16 16 0 0 1-16-16v-608a16 16 0 0 1 16-16h544a16 16 0 0 1 16 16v608z"
+            p-id="7375"
+          ></path>
+          <path
+            d="M848 64h-544a32 32 0 0 0 0 64h544a16 16 0 0 1 16 16v608a32 32 0 1 0 64 0v-608C928 99.904 892.128 64 848 64z"
+            p-id="7376"
+          ></path>
+          <path
+            d="M608 360H288a32 32 0 0 0 0 64h320a32 32 0 1 0 0-64zM608 520H288a32 32 0 1 0 0 64h320a32 32 0 1 0 0-64zM480 678.656H288a32 32 0 1 0 0 64h192a32 32 0 1 0 0-64z"
+            p-id="7377"
+          ></path>
+        </svg> </el-button
+      ><br />
+      <el-input
+        ref="plugincmd2"
+        v-model="inputcmd4"
+        style="width: 90%; margin-top: 4px"
+        @input="inputcmd4 == inputcmdbak4 ? _ : (inputcmd4 = inputcmdbak4)"
+      />
+      <el-button @click="copyToClipboard('plugincmd2')" style="margin-top: 4px">
+        <svg
+          t="1705980328555"
+          style="width: 20px; height: 25px"
+          viewBox="0 0 1024 1024"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          p-id="7374"
+          width="200"
+          height="200"
+        >
+          <path
+            d="M720 192h-544A80.096 80.096 0 0 0 96 272v608C96 924.128 131.904 960 176 960h544c44.128 0 80-35.872 80-80v-608C800 227.904 764.128 192 720 192z m16 688c0 8.8-7.2 16-16 16h-544a16 16 0 0 1-16-16v-608a16 16 0 0 1 16-16h544a16 16 0 0 1 16 16v608z"
+            p-id="7375"
+          ></path>
+          <path
+            d="M848 64h-544a32 32 0 0 0 0 64h544a16 16 0 0 1 16 16v608a32 32 0 1 0 64 0v-608C928 99.904 892.128 64 848 64z"
+            p-id="7376"
+          ></path>
+          <path
+            d="M608 360H288a32 32 0 0 0 0 64h320a32 32 0 1 0 0-64zM608 520H288a32 32 0 1 0 0 64h320a32 32 0 1 0 0-64zM480 678.656H288a32 32 0 1 0 0 64h192a32 32 0 1 0 0-64z"
+            p-id="7377"
+          ></path>
+        </svg> </el-button
+      ><br />
     </div>
     <template #footer>
       <span class="dialog-footer">
@@ -270,6 +355,24 @@
       </span>
     </template>
   </el-dialog>
+  <!-- 选择进入页面dialog -->
+  <el-dialog
+    v-model="opt_dialog"
+    :show-close="false"
+    title="选择进入"
+    style="width: 350px; border-radius: 15px"
+  >
+    <div>
+      <el-row :gutter="20">
+        <el-col :span="5">
+          <el-tag round @click="jumpWorkflow('node')" class="otag">节点</el-tag>
+        </el-col>
+        <el-col :span="5">
+          <el-tag round @click="jumpWorkflow('pod')" class="otag">Pod</el-tag>
+        </el-col>
+      </el-row>
+    </div>
+  </el-dialog>
 </template>
 <script>
 import { getAllClusters, deleteClusters } from "@/api/cluster/cluster";
@@ -278,11 +381,16 @@ import Cookies from "js-cookie";
 export default {
   data() {
     return {
+      opt_dialog: false,
       host: "",
       inputcmd: "",
       inputcmdbak: "",
       inputcmd2: "kubectl apply -f kubeagent.yaml",
       inputcmdbak2: "kubectl apply -f kubeagent.yaml",
+      inputcmd3:"",
+      inputcmdbak3:"",
+      inputcmd4:"chmod +x kubepacket && nohup ./kubepacket&",
+      inputcmdbak4:"",
       cluster_dialog: false,
       background: "",
       disabled: false,
@@ -305,6 +413,7 @@ export default {
       opacity: 1,
       increasing: true,
       clusterName: "",
+      clustername: "",
     };
   },
   methods: {
@@ -314,14 +423,14 @@ export default {
       this.inputcmdbak =
         "curl -o kubeagent.yaml http://" + this.host + "/yaml/kubeagent.yaml";
     },
+    plugUrl() {
+      this.inputcmd3 =
+        "curl -o kubepacket http://" + this.host + "/plugin/kubepacket";
+      this.inputcmdbak3 =
+        "curl -o kubepacket http://" + this.host + "/plugin/kubepacket";
+    },
     copyToClipboard(ref) {
-      let inputElement;
-      if (ref == "inputcmd1") {
-        inputElement = this.$refs.inputcmd1;
-      } else if (ref == "inputcmd2") {
-        inputElement = this.$refs.inputcmd2;
-      }
-
+      let inputElement = this.$refs[ref]
       inputElement.select(); // 选择输入框中的文本内容
       document.execCommand("copy"); // 执行复制操作
       // inputElement.setSelectionRange(0, 0);
@@ -405,14 +514,26 @@ export default {
           console.log("获取节点失败：", res);
         });
     },
+    jump(cluName) {
+      this.clustername = cluName;
+    },
     //跳转到pod页面
-    jumpWorkflow(cluName) {
-      this.$router.push({
-        path: "/pod",
-        query: {
-          clusterName: cluName, //根据cluName跳转集群
-        },
-      });
+    jumpWorkflow(opt) {
+      if (opt == "pod") {
+        this.$router.push({
+          path: "/pod",
+          query: {
+            clusterName: this.clustername, //根据cluName跳转集群
+          },
+        });
+      } else if (opt == "node") {
+        this.$router.push({
+          path: "/node",
+          query: {
+            clusterName: this.clustername, //根据cluName跳转集群
+          },
+        });
+      }
     },
     //转换时间戳
     timeTrans(timestamp) {
@@ -421,7 +542,7 @@ export default {
       date = date.substring(0, 19).replace("T", " ");
       return date;
     },
-    //获取所有集群
+    //获取集群
     getAllClus() {
       this.getClusterData.filterName = this.clusterName;
       this.getClusterData.page = this.currentPage;
@@ -466,6 +587,7 @@ export default {
     this.host = window.location.host;
     console.log("当前页面地址", this.host);
     this.yamlUrl();
+    this.plugUrl()
   },
 };
 </script>
@@ -513,5 +635,13 @@ export default {
 }
 .divcl {
   background: white;
+}
+.otag {
+  width: 60px;
+  height: 30px;
+  font-size: 14px;
+}
+.otag:hover {
+  cursor: pointer;
 }
 </style>

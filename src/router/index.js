@@ -38,18 +38,18 @@ const routes = [
     children: [
       //配置子页面
       {
-        path: "/pod", //视图,访问子页面的时候会带上layout布局页面
-        name: "pod",
-        icon: "Watermelon", //图标
-        meta: { title: "pod", requireAuth: true },
-        component: () => import("@/views/pod/Pod.vue"), //视图组件
+        path: "/node", //视图,访问子页面的时候会带上layout布局页面
+        name: "节点",
+        icon: "odometer", //图标
+        meta: { title: "节点", requireAuth: true },
+        component: () => import("@/views/node/node.vue"), //视图组件
       },
       {
-        path: "/node", //视图,访问子页面的时候会带上layout布局页面
-        name: "node",
-        icon: "odometer", //图标
-        meta: { title: "node", requireAuth: true },
-        component: () => import("@/views/node/node.vue"), //视图组件
+        path: "/pod", //视图,访问子页面的时候会带上layout布局页面
+        name: "Pod",
+        icon: "Watermelon", //图标
+        meta: { title: "Pod", requireAuth: true },
+        component: () => import("@/views/pod/Pod.vue"), //视图组件
       },
     ],
   },

@@ -26,6 +26,7 @@ let cancelFlag = false; //取消标志位
 // 获取 token
 httpClient.interceptors.request.use(
   (config) => {
+    console.log("请求：",config.url)
     if (config.url.includes("login")) {
       //当请求拦截器发现是login请求时，首先取消标志位置为false
       cancelFlag = false;
@@ -35,8 +36,9 @@ httpClient.interceptors.request.use(
     }
     //给config.cancelToken添加source.token，可以使source.cancel()来取消本次请求
     config.cancelToken = source.token;
+    // if (cancelFlag && !config.url.includes("authformula")) {
     if (cancelFlag) {
-      console.log("取消该请求。。。");
+      console.log("取消该请求。。。", config.url);
       //取消该请求
       source.cancel();
     }
@@ -67,6 +69,49 @@ httpClient.interceptors.request.use(
   }
 );
 
+// httpClient.interceptors.request.use(
+//   (config) => {
+//     console.log("debug_request: ", config.url);
+//     //重新创建取消token和source
+//     cancelToken = axios.CancelToken;
+//     source = cancelToken.source();
+
+//     //给config.cancelToken添加source.token，可以使source.cancel()来取消本次请求
+//     config.cancelToken = source.token;
+//     if (cancelFlag) {
+//       if (config.url != "/login" && config.url != "/authformula") {
+//         console.log("取消该请求。。。", config.url);
+//         source.cancel();
+//         // cancelFlag = false;
+//       }
+//     }
+
+//     console.log("后端地址为：", config.baseURL);
+//     //添加header
+//     config.headers["Content-Type"] = "application/json";
+//     config.headers["Accept-Language"] = "zh-CN";
+//     // config.headers["Authorization"] = localStorage.getItem("token"); //可以全局设置接口请求header中带token
+//     if (!config.url.includes("login")) {
+//       config.headers["Authorization"] = Cookies.get("token");
+//     }
+//     //
+//     // config.headers["Name"] = "etan";
+//     console.log("准备请求token为：", config.headers["Authorization"]);
+//     if (config.method == "post") {
+//       if (!config.data) {
+//         // 没有参数时，config.data为null，需要转下类型
+//         config.data = {};
+//       }
+//     }
+//     console.log("请求: ", config);
+//     return config;
+//   },
+//   (err) => {
+//     //Promise.reject()方法返回一个带有拒绝原因的Promise对象，在F12的console中显示报错
+//     Promise.reject(err);
+//   }
+// );
+
 //添加响应拦截器
 httpClient.interceptors.response.use(
   (response) => {
@@ -79,9 +124,10 @@ httpClient.interceptors.response.use(
           //code等于10086代表token已过期
           if (response.data[k].code == 10086) {
             //将取消标志位置为true
-            cancelFlag = true;
+
             ElMessage(response.data.msg);
             router.push("/login");
+            cancelFlag = true;
           }
         }
       }

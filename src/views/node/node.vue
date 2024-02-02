@@ -307,7 +307,7 @@
     v-model="nodeinfo_dialog"
     title="节点详情"
     width="70%"
-    style="height: 90%; border-radius: 15px; margin-left: 15%; margin-top: 40px"
+    style="height: 92%; border-radius: 15px; margin-left: 15%; margin-top: 40px"
     :before-close="nodeClose"
     :close-on-click-modal="false"
     :draggable="true"
@@ -539,19 +539,20 @@
         </div>
       </el-card>
     </div>
-
-    <div style="text-align: center">
-      <el-button
-        @click="
-          nodeinfo_dialog = false;
-          resetNodeInfo();
-        "
-        style="margin-top: 20px"
-        type="info"
-        round
-        >关闭</el-button
-      >
-    </div>
+    <template #footer>
+      <div style="text-align: center">
+        <el-button
+          @click="
+            nodeinfo_dialog = false;
+            resetNodeInfo();
+          "
+          style="margin-top: -20px"
+          type="info"
+          round
+          >关闭</el-button
+        >
+      </div>
+    </template>
   </el-dialog>
   <!-- 抓包dialog -->
   <el-dialog
@@ -1129,6 +1130,16 @@ export default {
     };
   },
   methods: {
+    pingReset(){
+      this.icmpdata= {
+        max: "0.00",
+        min: "0.00",
+        avg: "0.00",
+        sent: 0,
+        recv: 0,
+        loss: 0,
+      }
+    },
     //控制字符串长度
     ellipsis(str) {
       // 判断lables的长度是否大于15，为true则0-20位正常显示，之后的显示...，为false则直接返回值
@@ -1346,8 +1357,12 @@ export default {
         });
       }
     },
+
     //icmp测试
     icmpFunc() {
+      if(this.icmpData.sent!=0){
+        this.pingReset()
+      }
       this.$message.success({
         message: "开始ICMP连通性测试",
       });
@@ -1362,7 +1377,7 @@ export default {
         .catch((res) => {
           console.log("ping失败:", res);
           this.$message.error({
-            message: res.err,
+            message: res,
           });
         });
     },
@@ -1516,8 +1531,8 @@ export default {
         .catch((res) => {
           console.error("报错为：", res);
           this.$message.error({
-            message:res.err
-          })
+            message: res.err,
+          });
         })
         .finally((_) => {
           this.apploading = false;
@@ -1530,11 +1545,10 @@ export default {
         console.log("当前集群：", this.cluName);
         //判断是否在pod页面切换集群了
         if (this.cluName != Cookies.get("cluName")) {
-          //如果切换集群了则将namespace置空，并更新cookie
+          //如果切换集群就更新cookie，然后获取新集群节点列表
           Cookies.set("cluName", this.cluName);
+          this.getNodes();
         }
-
-        this.getNodes();
       },
     },
   },
@@ -1547,7 +1561,7 @@ export default {
 
     console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
     if (this.cluName != Cookies.get("oldCluName")) {
-      localStorage.setItem("namespace", "");
+      // localStorage.setItem("namespace", "");
       //存储旧集群
       Cookies.set("oldCluName", this.cluName);
     }
@@ -1655,7 +1669,7 @@ export default {
   width: 99%;
 }
 .nodeInfoCard {
-  height: 700px;
+  height: 680px;
   overflow: auto; /* 自动开启滚动条 */
   max-height: 700; /* 设置最大高度 */
 }

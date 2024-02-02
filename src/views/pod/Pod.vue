@@ -604,7 +604,6 @@
       margin-left: 15%;
       margin-top: 50px;
     "
-    
     :close-on-click-modal="false"
     :draggable="true"
   >
@@ -789,11 +788,11 @@ import common from "../common/Config";
 // 引入css和js是为了该组件的外观展示
 import { getNamespacesReq } from "@/api/namespace/namespace";
 import {
-downloadFile,
-getContainerPath,
-getContainersReq,
-getPodsReq,
-getUploadHistory
+  downloadFile,
+  getContainerPath,
+  getContainersReq,
+  getPodsReq,
+  getUploadHistory,
 } from "@/api/pod/pod";
 import "xterm/css/xterm.css";
 import "xterm/lib/xterm.js";
@@ -831,7 +830,12 @@ export default {
       },
       uploadFiles: [],
       uploadUri: "",
-      uploadUribak:  "http://"+Cookies.get("host")+":"+Cookies.get("port")+"/api/upload",
+      uploadUribak:
+        "http://" +
+        Cookies.get("host") +
+        ":" +
+        Cookies.get("port") +
+        "/api/upload",
       dialogVisible: false,
       apploading: true,
       namespaceValue: "",
@@ -869,7 +873,8 @@ export default {
       yamlDialog: false,
       contentYaml: "",
       cmOptions: common.cmOptions,
-      k8sTerminalWs: "ws://"+Cookies.get("host")+":"+Cookies.get("port")+"/api/ws",
+      k8sTerminalWs:
+        "ws://" + Cookies.get("host") + ":" + Cookies.get("port") + "/api/ws",
       //获取pod详情
       getPodDetailData: {
         // url: common.K8sGetPodDetail,
@@ -1091,7 +1096,7 @@ export default {
       console.log("开始清除。。。");
       this.treeData = [];
       // this.uploadUri = "";
-      
+
       this.uploadFiles = [];
       this.paths = [];
       this.podinfo = {
@@ -1614,8 +1619,8 @@ export default {
         .catch((res) => {
           console.log("获取pod失败：", res.err);
           this.$message.error({
-            message:res.err
-          })
+            message: res.err,
+          });
           this.podTotal = 0;
           // this.podList = "";
         })
@@ -1723,10 +1728,10 @@ export default {
           //如果切换集群了则将namespace置空，并更新cookie
           this.namespaceValue = "";
           Cookies.set("cluName", this.cluName);
+          //然后重新获取namespace和pod列表
+          this.getPodNamespace();
+          this.getPodList();
         }
-        //重新获取namespace和pod列表
-        this.getPodNamespace();
-        this.getPodList();
       },
     },
     //监听namespace的值,若发生变化，则执行handler方法中的内容
@@ -1753,9 +1758,9 @@ export default {
       this.cluName = Cookies.get("cluName");
     }
 
-    console.log("old: ",Cookies.get("oldCluName")," new:",this.cluName )
+    console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
     if (this.cluName != Cookies.get("oldCluName")) {
-      localStorage.setItem("namespace","")
+      localStorage.setItem("namespace", "");
       //存储旧集群
       Cookies.set("oldCluName", this.cluName);
     }
