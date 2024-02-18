@@ -1,28 +1,30 @@
-# 多集群页面操作pod工具前端
+# k8s实用性效率工具前端
 支持页面上传文件到pod内部，从pod内部下载文件到本地，终端、日志功能。支持多集群
 
-## Project setup
+# 说明
+此项目是一个可以在页面对pod以及node进行远程操作的平台前端
+
+# 功能
+pod: 页面上传文件到pod内部，从pod内部下载文件到本地，终端、日志功能。
+
+node: 远程抓包、icmp测试、端口测试（仅支持TCP），先决条件：需配合kubepacket插件完成
+
+支持添加多个集群
+
+## 下载到本地安装依赖包
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+## 本地运行测试
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+## 打包
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
 # Dockerfile
 #kubeagent.yaml在项目根目录
@@ -67,3 +69,7 @@ server {
 
 }
 ```
+
+# 页面效果展示
+
+
