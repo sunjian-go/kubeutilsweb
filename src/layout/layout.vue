@@ -335,6 +335,7 @@ import { useRouter } from "vue-router";
             localStorage.removeItem("username");
             //清除集群
             Cookies.set("cluName","undefined")
+            Cookies.set("loginStatus", false);
             //移除token
             Cookies.remove("token");
             this.$message({

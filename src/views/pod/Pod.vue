@@ -788,11 +788,11 @@ import common from "../common/Config";
 // 引入css和js是为了该组件的外观展示
 import { getNamespacesReq } from "@/api/namespace/namespace";
 import {
-  downloadFile,
-  getContainerPath,
-  getContainersReq,
-  getPodsReq,
-  getUploadHistory,
+downloadFile,
+getContainerPath,
+getContainersReq,
+getPodsReq,
+getUploadHistory,
 } from "@/api/pod/pod";
 import "xterm/css/xterm.css";
 import "xterm/lib/xterm.js";
@@ -964,6 +964,7 @@ export default {
         limit: 10000,
       },
       fileName: "",
+      timerr: 0,
     };
   },
   methods: {
@@ -1140,7 +1141,6 @@ export default {
     //获取容器所有路径
     getContainerpath(path) {
       this.podinfo.path = path;
-      console.log("qqqqqqqqqqqqqqqqqqqqq", this.podinfo);
       this.paths = [];
       getContainerPath(this.podinfo, this.cluName)
         .then((res) => {
@@ -1164,7 +1164,7 @@ export default {
         .catch((res) => {
           console.log("获取路径报错：", res.err);
           this.$message.error({
-            message: "因权限问题，该容器禁止访问内部路径！",
+            message: res.err,
           });
         });
     },
@@ -1397,7 +1397,7 @@ export default {
     socketOnClose() {
       this.socket.onclose = () => {
         //关闭连接后打印在终端里
-        // this.term.write("终端websocket连接已关闭");
+        this.term.write("websocket connect timeout");
         console.log("终端websocket连接已关闭");
       };
     },
@@ -1511,7 +1511,7 @@ export default {
     },
     //关闭连接时调用的方法
     logSocketOnClose() {
-      this.logSocket.onclose = () => {
+      this.logSocket.onclose = function () {
         console.log("日志websocket连接已关闭");
       };
     },
@@ -1529,9 +1529,9 @@ export default {
         //接收到消息后将字符串转为对象，输出data内容
         let content = JSON.parse(msg.data);
         this.containerLog = content.data;
-        //let newlog = this.lines(this.containerLog);
-        console.log("ws获取到：", this.containerLog);
+        // console.log("ws获取到：", this.containerLog);
         this.logTerm.write(this.containerLog);
+
       };
     },
     //log报错时调用的方法

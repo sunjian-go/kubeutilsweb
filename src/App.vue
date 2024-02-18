@@ -14,6 +14,6 @@ body {
 }
 #nprogress .bar {
   /*自定义进度条颜色 */
-  background: #f36bdc !important;
+  background: #355fe9 !important;
 }
 </style>

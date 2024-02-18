@@ -162,6 +162,8 @@ export default {
           Cookies.set("host", this.wshost);
           Cookies.set("port", this.wsport);
           console.log("token 获取：", Cookies.get("token"));
+
+          Cookies.set("loginStatus", true);
           // console.log("asasasas:",Cookies.get("host"),Cookies.get("port"))
           //跳转至根路径
           this.$router.push("/home");

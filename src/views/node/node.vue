@@ -1023,13 +1023,13 @@
 <script>
 import { getAllClusters } from "@/api/cluster/cluster";
 import {
-  getInterface,
-  icmpFunc,
-  startPacket,
-  stopPacket,
-  portFunc,
+getInterface,
+icmpFunc,
+portFunc,
+startPacket,
+stopPacket,
 } from "@/api/interface/interface";
-import { getNodesReq, getNodeDetailsReq } from "@/api/nodes/nodes";
+import { getNodeDetailsReq, getNodesReq } from "@/api/nodes/nodes";
 import Cookies from "js-cookie";
 export default {
   data() {
@@ -1130,15 +1130,15 @@ export default {
     };
   },
   methods: {
-    pingReset(){
-      this.icmpdata= {
+    pingReset() {
+      this.icmpdata = {
         max: "0.00",
         min: "0.00",
         avg: "0.00",
         sent: 0,
         recv: 0,
         loss: 0,
-      }
+      };
     },
     //控制字符串长度
     ellipsis(str) {
@@ -1278,22 +1278,27 @@ export default {
     },
     //端口连通性测试
     portfunc() {
-      // this.$message.success({
-      //   message: "开始port连通性测试",
-      // });
+      this.portStatus = 0;
       portFunc(this.cluName, this.host, this.portData)
         .then((res) => {
           console.log("端口测试成功：", res);
-          this.portStatus = 1;
+          setTimeout(() => {
+            this.portStatus = 1;
+          }, 300);
         })
         .catch((res) => {
-          // console.log("端口测试失败：", res);
-          if (!res.err.includes("TCP 连接失败:")) {
+          console.log("端口测试失败：", res);
+          if (
+            res.err !=
+            "TCP 连接失败:dial tcp 127.0.0.1:222: connect: connection refused"
+          ) {
             this.$message.error({
               message: res.err,
             });
           }
-          this.portStatus = 2;
+          setTimeout(() => {
+            this.portStatus = 2;
+          }, 300);
         });
     },
     //保留小数点后两位
@@ -1350,7 +1355,13 @@ export default {
         this.icmpData.count != "" &&
         this.icmpData.timeOut != ""
       ) {
-        this.icmpFunc();
+        if (this.icmpData.count > 10) {
+          this.$message.error({
+            message: "数据包个数不得大于10",
+          });
+        } else {
+          this.icmpFunc();
+        }
       } else {
         this.$message.error({
           message: "缺少必要参数，请补充所缺参数",
@@ -1360,8 +1371,8 @@ export default {
 
     //icmp测试
     icmpFunc() {
-      if(this.icmpData.sent!=0){
-        this.pingReset()
+      if (this.icmpData.sent != 0) {
+        this.pingReset();
       }
       this.$message.success({
         message: "开始ICMP连通性测试",
@@ -1377,7 +1388,7 @@ export default {
         .catch((res) => {
           console.log("ping失败:", res);
           this.$message.error({
-            message: res,
+            message: res.err,
           });
         });
     },
