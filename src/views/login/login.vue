@@ -67,6 +67,7 @@ import common from "../common/Config";
 export default {
   data() {
     return {
+      pageReloaded: false,
       code: "",
       viewCode: "",
       // /加载等待动画
@@ -110,7 +111,7 @@ export default {
   methods: {
     //后端获取验证码
     getcode() {
-      this.viewCode=""
+      this.viewCode = "";
       authCode()
         .then((res) => {
           console.log("验证码：", res);
@@ -184,9 +185,21 @@ export default {
           }
         });
     },
+    reload() {
+      if (!this.pageReloaded) {
+        console.log("加载？", this.pageReloaded);
+        window.location.reload();
+        this.pageReloaded = true;
+      }
+    },
   },
   beforeMount() {
-    //后端获取验证码
+    //后端获取验证
+    if (Cookies.get("load") == "true") {
+      Cookies.set("load", "false");
+      //重新加载当前页面
+      window.location.reload();
+    }
     this.getcode();
   },
   mounted() {

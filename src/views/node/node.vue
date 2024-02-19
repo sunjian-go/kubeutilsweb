@@ -172,6 +172,7 @@
                               getInterfaces(
                                 scope.row.status.addresses[0].address
                               );
+                              nodename = scope.row.metadata.name;
                             "
                             >抓包操作
                             <svg
@@ -206,6 +207,7 @@
                             @click="
                               icmp_dialog = true;
                               getHost(scope.row.status.addresses[0].address);
+                              nodename = scope.row.metadata.name;
                             "
                             >ping测试
                             <svg
@@ -230,6 +232,7 @@
                             @click="
                               port_dialog = true;
                               getHost(scope.row.status.addresses[0].address);
+                              nodename = scope.row.metadata.name;
                             "
                             >端口测试
                             <svg
@@ -307,7 +310,12 @@
     v-model="nodeinfo_dialog"
     title="节点详情"
     width="70%"
-    style="height: 92%; border-radius: 15px; margin-left: 15%; margin-top: 40px"
+    style="
+      height: 830px;
+      border-radius: 15px;
+      margin-left: 15%;
+      margin-top: 40px;
+    "
     :before-close="nodeClose"
     :close-on-click-modal="false"
     :draggable="true"
@@ -539,25 +547,24 @@
         </div>
       </el-card>
     </div>
-    <template #footer>
-      <div style="text-align: center">
-        <el-button
-          @click="
-            nodeinfo_dialog = false;
-            resetNodeInfo();
-          "
-          style="margin-top: -20px"
-          type="info"
-          round
-          >关闭</el-button
-        >
-      </div>
-    </template>
+    <!-- <template #footer> -->
+    <div style="text-align: center; margin-top: 20px">
+      <el-button
+        @click="
+          nodeinfo_dialog = false;
+          resetNodeInfo();
+        "
+        type="info"
+        round
+        >关闭</el-button
+      >
+    </div>
+    <!-- </template> -->
   </el-dialog>
   <!-- 抓包dialog -->
   <el-dialog
     v-model="packet_dialog"
-    title="抓取数据包"
+    :title="packinfo + nodename"
     width="40%"
     style="
       height: 290px;
@@ -631,6 +638,12 @@
                     <span style="font-size: 11px; color: rgb(163, 163, 163)"
                       >端口范围示例：30000-40000</span
                     >
+                    <span
+                      v-if="packetData.port > 65535"
+                      class="floating-span"
+                      style="margin-left: -147px; margin-top: 20px"
+                      >无效端口（有效端口范围0-65535）</span
+                    >
                   </el-col>
                 </el-row>
               </div>
@@ -644,11 +657,7 @@
             style="border-radius: 13px"
             size="small"
             :disabled="start_butdisable"
-            @click="
-              over_butdisable = false;
-              start_butdisable = true;
-              checkPacketData();
-            "
+            @click="checkPacketData()"
             >开始抓包</el-button
           >
           <el-button
@@ -657,11 +666,7 @@
             type="info"
             size="small"
             :disabled="over_butdisable"
-            @click="
-              start_butdisable = false;
-              over_butdisable = true;
-              stoppacket();
-            "
+            @click="stoppacket()"
             >结束抓包</el-button
           >
         </div>
@@ -684,7 +689,7 @@
   <!-- ping测试dialog -->
   <el-dialog
     v-model="icmp_dialog"
-    title="icmp连通性测试"
+    :title="icmpinfo + nodename"
     width="40%"
     style="
       height: 280px;
@@ -898,7 +903,7 @@
   <!-- 端口测试dialog -->
   <el-dialog
     v-model="port_dialog"
-    title="端口连通性测试"
+    :title="portinfo + nodename"
     width="40%"
     style="
       height: 230px;
@@ -945,6 +950,9 @@
                       v-model="portData.tcpPort"
                       placeholder="请输入端口"
                     ></el-input>
+                    <span v-if="portData.tcpPort > 65535" class="floating-span"
+                      >无效端口（有效端口范围0-65535）</span
+                    >
                   </el-col>
                 </el-row>
               </div>
@@ -1034,6 +1042,10 @@ import Cookies from "js-cookie";
 export default {
   data() {
     return {
+      nodename: "",
+      portinfo: "端口连通性测试：",
+      icmpinfo: "icmp连通性测试：",
+      packinfo: "抓取数据包：",
       nodeinfo_dialog: false,
       portStatus: 0,
       port_dialog: false,
@@ -1127,6 +1139,7 @@ export default {
       taints_vals: [],
       activeNames: ["1"],
       nodeName: "",
+      portshow: false,
     };
   },
   methods: {
@@ -1269,7 +1282,18 @@ export default {
     //端口连通性数据检测
     portCheckData() {
       if (this.portData.ip != "" && this.portData.tcpPort != "") {
-        this.portfunc();
+        const regex = /^[0-9]+$/;
+        if (regex.test(this.portData.tcpPort)) {
+          if (this.portData.tcpPort <= 65535) {
+            // this.startpacket();
+            this.portfunc();
+          }
+        } else {
+          this.portStatus = 0;
+          this.$message.error({
+            message: "端口必须为数字",
+          });
+        }
       } else {
         this.$message.error({
           message: "缺少必要参数，请补充所缺参数",
@@ -1287,11 +1311,11 @@ export default {
           }, 300);
         })
         .catch((res) => {
+          // 正则匹配connection refused字段
+          const regex = /connection refused/;
+          const isRefused = regex.test(res.err);
           console.log("端口测试失败：", res);
-          if (
-            res.err !=
-            "TCP 连接失败:dial tcp 127.0.0.1:222: connect: connection refused"
-          ) {
+          if (!isRefused) {
             this.$message.error({
               message: res.err,
             });
@@ -1395,7 +1419,16 @@ export default {
     //检查抓包数据
     checkPacketData() {
       if (this.packetData.ip != "" || this.packetData.port != "") {
-        this.startpacket();
+        const regex = /^[0-9]+$/;
+        if (regex.test(this.packetData.port)) {
+          if (this.packetData.port <= 65535) {
+            this.startpacket();
+          }
+        } else {
+          this.$message.error({
+            message: "端口必须为数字",
+          });
+        }
       } else {
         this.$message.error({
           message: "请至少指定ip或port任意一个参数",
@@ -1406,6 +1439,8 @@ export default {
     },
     //启动抓包
     startpacket() {
+      this.over_butdisable = false;
+      this.start_butdisable = true;
       startPacket(this.cluName, this.host, this.packetData)
         .then((res) => {
           this.$message.success({
@@ -1416,10 +1451,14 @@ export default {
           this.$message.error({
             message: res["err"],
           });
+          this.start_butdisable = false;
+          this.over_butdisable = true;
         });
     },
     //停止抓包
     stoppacket() {
+      this.start_butdisable = false;
+      this.over_butdisable = true;
       this.$message.success({
         message: "开始下载pcap数据包。。。",
       });
@@ -1683,5 +1722,14 @@ export default {
   height: 680px;
   overflow: auto; /* 自动开启滚动条 */
   max-height: 700; /* 设置最大高度 */
+}
+.floating-span {
+  position: absolute;
+  z-index: 9999; /* 设置一个较高的 z-index 值 */
+  margin-top: 33px;
+  margin-left: -98px;
+  width: 200px;
+  font-size: 11px;
+  color: red;
 }
 </style>

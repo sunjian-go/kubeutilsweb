@@ -38,9 +38,9 @@ httpClient.interceptors.request.use(
     config.cancelToken = source.token;
     // if (cancelFlag && !config.url.includes("authformula")) {
     if (cancelFlag) {
-      console.log("取消该请求。。。", config.url);
-      //取消该请求
-      source.cancel();
+        console.log("取消该请求。。。", config.url);
+        //取消该请求
+        source.cancel();
     }
 
     console.log("后端地址为：", config.baseURL);
@@ -84,6 +84,8 @@ httpClient.interceptors.response.use(
             ElMessage(response.data.msg);
             router.push("/login");
             cancelFlag = true;
+            Cookies.set("load","true")
+            console.log("load:",Cookies.get("load"))
           }
         }
       }

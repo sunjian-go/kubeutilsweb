@@ -192,6 +192,7 @@
                             @click="
                               termal_dialog = true;
                               initSocket(scope.row);
+                              podname=scope.row.metadata.name;
                             "
                             >执行命令行
                             <svg
@@ -220,6 +221,7 @@
                             @click="
                               log_dialog = true;
                               initGetLogSocket(scope.row);
+                              podname=scope.row.metadata.name;
                             "
                             >查看日志
                             <svg
@@ -499,7 +501,7 @@
   <!-- 命令行dialog -->
   <el-dialog
     v-model="termal_dialog"
-    title="Terminal"
+    :title=termshow+podname
     width="80%"
     style="
       height: 800px;
@@ -527,7 +529,7 @@
                 closeSocket();
               "
               style="border-radius: 10px"
-              type="warning"
+              type="info"
               >关闭</el-button
             >
           </el-col>
@@ -557,7 +559,6 @@
             </svg>
           </el-col>
         </el-row>
-
         <!-- <el-button @click="download_dialog = true"> 下载文件 </el-button> -->
       </div>
     </template>
@@ -565,7 +566,7 @@
   <!-- 日志dialog -->
   <el-dialog
     v-model="log_dialog"
-    title="Log"
+    :title=logshow+podname
     width="80%"
     style="
       height: 800px;
@@ -587,7 +588,7 @@
             logCloseSocket();
           "
           style="border-radius: 10px"
-          type="warning"
+          type="info"
           >关闭</el-button
         >
       </div>
@@ -661,11 +662,6 @@
                 v-loading="apploading"
               >
                 <el-table-column width="20" />
-                <!-- <el-table-column label="集群" align="left">
-                  <template v-slot="scope">
-                    <span>{{ scope.row.cluster_name }}</span>
-                  </template>
-                </el-table-column> -->
                 <el-table-column label="Pod" align="left">
                   <template v-slot="scope">
                     <span>{{ scope.row.podName }}</span>
@@ -721,7 +717,7 @@
             <el-button
               @click="resetUp()"
               style="border-radius: 10px"
-              type="warning"
+              type="info"
               >关闭</el-button
             >
           </div>
@@ -805,6 +801,9 @@ import { FitAddon } from "xterm-addon-fit";
 export default {
   data() {
     return {
+      podname:"",
+      termshow:"命令行：",
+      logshow:"日志：",
       uploadHistory: [],
       opacity: 1,
       download_info: "",
