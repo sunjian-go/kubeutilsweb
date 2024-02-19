@@ -399,7 +399,7 @@
                   <!-- 系统信息 -->
                   <el-col :span="24">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" @change="handleChange">
+                      <el-collapse v-model="activeNames" >
                         <el-collapse-item name="1">
                           <template #title>
                             <span style="font-size: 16px">系统信息</span>
@@ -434,7 +434,7 @@
                   <!-- 标签 -->
                   <el-col :span="24" style="transform: translateY(10px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" @change="handleChange">
+                      <el-collapse v-model="activeNames" >
                         <el-collapse-item name="2">
                           <template #title>
                             <span style="font-size: 16px">标签</span>
@@ -471,7 +471,7 @@
                   <!-- 注释 -->
                   <el-col :span="24" style="transform: translateY(20px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" @change="handleChange">
+                      <el-collapse v-model="activeNames" >
                         <el-collapse-item name="3">
                           <template #title>
                             <span style="font-size: 16px">注释</span>
@@ -506,7 +506,7 @@
                   <!-- Taints -->
                   <el-col :span="24" style="transform: translateY(30px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" @change="handleChange">
+                      <el-collapse v-model="activeNames" >
                         <el-collapse-item name="4">
                           <template #title>
                             <span style="font-size: 16px">Taints</span>
@@ -1042,6 +1042,7 @@ import Cookies from "js-cookie";
 export default {
   data() {
     return {
+      background:false,
       nodename: "",
       portinfo: "端口连通性测试：",
       icmpinfo: "icmp连通性测试：",
@@ -1190,11 +1191,8 @@ export default {
     addtaints() {
       let i = 0;
       for (i in this.taints) {
-        console.log("xxx", this.taints[i]);
         this.objsadd(this.taints[i], this.taints_keys, this.taints_vals);
       }
-      // console.log("keysL: ", this.taints_keys);
-      // console.log("keysL: ", this.taints_vals);
     },
     osinfoadd() {
       let i = 0;
@@ -1231,7 +1229,7 @@ export default {
       // return
       getNodeDetailsReq(this.cluName, this.nodeName)
         .then((res) => {
-          console.log("node详情为：", res.data);
+          // console.log("node详情为：", res.data);
           this.node.ip = res.data.status.addresses[0].address;
           this.node.create_time = this.timeTrans(
             res.data.metadata.creationTimestamp
@@ -1250,7 +1248,7 @@ export default {
           this.node.OS_type = res.data.status.nodeInfo.operatingSystem;
           this.osinfoadd();
           this.labels = res.data.metadata.labels;
-          console.log("获取标签：", this.labels);
+          // console.log("获取标签：", this.labels);
           this.objsadd(this.labels, this.labels_key, this.labels_val);
           this.annotations = res.data.metadata.annotations;
           this.objsadd(
@@ -1265,7 +1263,10 @@ export default {
           this.addtaints();
         })
         .catch((res) => {
-          console.log("报错为：", res.err);
+          // console.log("报错为：", res.err);
+          this.$message.error({
+            message:res.err
+          })
         });
     },
     portClose() {
@@ -1305,7 +1306,7 @@ export default {
       this.portStatus = 0;
       portFunc(this.cluName, this.host, this.portData)
         .then((res) => {
-          console.log("端口测试成功：", res);
+          // console.log("端口测试成功：", res);
           setTimeout(() => {
             this.portStatus = 1;
           }, 300);
@@ -1314,7 +1315,7 @@ export default {
           // 正则匹配connection refused字段
           const regex = /connection refused/;
           const isRefused = regex.test(res.err);
-          console.log("端口测试失败：", res);
+          // console.log("端口测试失败：", res);
           if (!isRefused) {
             this.$message.error({
               message: res.err,
@@ -1327,12 +1328,12 @@ export default {
     },
     //保留小数点后两位
     toFixedFunc(str) {
-      console.log("str:", str);
+      // console.log("str:", str);
       let newnum;
       //取出小数段
       const nummatch = str.match(/(\d+(\.\d+)?)/);
       if (nummatch && nummatch.length > 0) {
-        console.log("延迟数字段：", nummatch[0]);
+        // console.log("延迟数字段：", nummatch[0]);
         newnum = parseFloat(nummatch[0]).toFixed(2);
       }
       //取出单位段(u)
@@ -1343,7 +1344,7 @@ export default {
       //取出单位段(ms/s)
       const optmatch = str.match(/[a-zA-Z]+$/);
       if (optmatch && optmatch.length > 0) {
-        console.log("单位：", optmatch[0]);
+        // console.log("单位：", optmatch[0]);
         newnum = newnum + optmatch[0]; //有单位的情况下才加上单位
       }
       return newnum;
@@ -1403,14 +1404,14 @@ export default {
       });
       icmpFunc(this.cluName, this.host, this.icmpData)
         .then((res) => {
-          console.log("ping获取到:", res.data);
+          // console.log("ping获取到:", res.data);
           this.icmpdata = res.data;
           this.$message.success({
             message: "ICMP连通性测试完成",
           });
         })
         .catch((res) => {
-          console.log("ping失败:", res);
+          // console.log("ping失败:", res);
           this.$message.error({
             message: res.err,
           });
@@ -1495,7 +1496,7 @@ export default {
       this.host = ip + ":8888";
       getInterface(this.cluName, this.host)
         .then((res) => {
-          console.log("网卡列表为：", res.data);
+          // console.log("网卡列表为：", res.data);
           this.nets = res.data;
         })
         .catch((res) => {
@@ -1524,13 +1525,13 @@ export default {
     },
     //node分页
     handleSizeChange(size) {
-      console.log(`每页 ${size} 条`);
+      // console.log(`每页 ${size} 条`);
       this.pagesize = size;
       this.getNodes();
     },
     handleCurrentChange(page) {
       this.currentPage = page;
-      console.log("当前页: ", this.currentPage);
+      // console.log("当前页: ", this.currentPage);
       this.getNodes();
     },
     //换算内存信息
@@ -1553,12 +1554,15 @@ export default {
       this.getClusterData.limit = 10000;
       getAllClusters(this.getClusterData)
         .then((res) => {
-          console.log("获取所有集群：", res.data);
+          // console.log("获取所有集群：", res.data);
           this.clus = res.data;
           // localStorage.setItem("cluName",this.clus[0].cluster_name)
         })
         .catch((res) => {
-          console.error("获取集群失败：", res.err);
+          this.$message.error({
+            message:"获取集群失败："+ res.err
+          })
+          // console.error("获取集群失败：", res.err);
         });
     },
     //获取所有node
@@ -1574,7 +1578,7 @@ export default {
         this.getNodeData.page
       )
         .then((res) => {
-          console.log("获取到node：", res.data.items);
+          // console.log("获取到node：", res.data.items);
           this.nodeList = res.data.items;
           this.nodeTotal = res.data.total;
         })
@@ -1592,7 +1596,7 @@ export default {
   watch: {
     cluName: {
       handler() {
-        console.log("当前集群：", this.cluName);
+        // console.log("当前集群：", this.cluName);
         //判断是否在pod页面切换集群了
         if (this.cluName != Cookies.get("cluName")) {
           //如果切换集群就更新cookie，然后获取新集群节点列表
@@ -1609,14 +1613,14 @@ export default {
       this.cluName = Cookies.get("cluName");
     }
 
-    console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
+    // console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
     if (this.cluName != Cookies.get("oldCluName")) {
       // localStorage.setItem("namespace", "");
       //存储旧集群
       Cookies.set("oldCluName", this.cluName);
     }
 
-    console.log("node页集群名：", this.cluName);
+    // console.log("node页集群名：", this.cluName);
     this.getAllClus();
     this.getNodes();
   },

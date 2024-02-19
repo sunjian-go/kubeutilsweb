@@ -375,7 +375,7 @@
   </el-dialog>
 </template>
 <script>
-import { getAllClusters, deleteClusters } from "@/api/cluster/cluster";
+import { deleteClusters, getAllClusters } from "@/api/cluster/cluster";
 import { getNodesReq } from "@/api/nodes/nodes";
 import Cookies from "js-cookie";
 export default {
@@ -550,7 +550,7 @@ export default {
 
       getAllClusters(this.getClusterData)
         .then((res) => {
-          console.log("获取所有集群：", res.data);
+          // console.log("获取所有集群：", res.data);
           this.clus = res.data;
           this.cluTotal = res.total;
 
@@ -569,12 +569,15 @@ export default {
           }
           //flag不等于1说明集群被删除了
           if (flag != 1) {
-            console.log("集群被删除");
+            // console.log("集群被删除");
             Cookies.set("cluName", this.clus[0].cluster_name);
           }
         })
         .catch((res) => {
-          console.error("获取集群失败：", res.err);
+          this.$message.error({
+            message: "获取集群失败："+ res
+          })
+          // console.error("获取集群失败：", res.err);
         });
     },
   },
@@ -585,7 +588,7 @@ export default {
     //获取所有集群
     this.getAllClus();
     this.host = window.location.host;
-    console.log("当前页面地址", this.host);
+    // console.log("当前页面地址", this.host);
     this.yamlUrl();
     this.plugUrl()
   },

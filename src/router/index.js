@@ -80,14 +80,14 @@ router.beforeEach((to, from, next) => {
   // 启动进度条
   NProgress.start();
   // 设置头部
-  console.log("头部", to.meta.title);
+  // console.log("头部", to.meta.title);
   if (to.meta.title) {
     document.title = to.meta.title;
   } else {
     document.title = "KubeUtils";
   }
 
-  console.log("to", to.path);
+  // console.log("to", to.path);
   if (to.path != "/" && to.path != "/login") {
     let token = Cookies.get("token");
     // console.log("flag", flag);

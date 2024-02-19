@@ -259,7 +259,7 @@ import { useRouter } from "vue-router";
       '$route': {
         handler(newRoute) {
           const newPath = newRoute.path;
-          console.log("路由发生变化，新的路径：", newPath);
+          // console.log("路由发生变化，新的路径：", newPath);
           // 在这里可以检查 $route.path 是否有变化
           if(newPath=='/home' && sessionStorage.getItem('flag')!=1){   //sessionStorage.getItem('flag')!=1,表示只有第一次跳转该页面的时候flag才会不等于1，只要跳转过一次，那么后面都会等于1
             this.defaultActive=""

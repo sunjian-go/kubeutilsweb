@@ -765,7 +765,7 @@
             fileEmpty = false;
           "
           style="border-radius: 10px"
-          type="warning"
+          type="info"
           >关闭</el-button
         >
         <el-button
@@ -980,24 +980,26 @@ export default {
       this.getClusterData.limit = 10000;
       getAllClusters(this.getClusterData)
         .then((res) => {
-          console.log("获取所有集群：", res.data);
+          // console.log("获取所有集群：", res.data);
           this.clus = res.data;
-          // localStorage.setItem("cluName",this.clus[0].cluster_name)
         })
         .catch((res) => {
-          console.error("获取集群失败：", res.err);
+          // console.error("获取集群失败：", res.err);
+          this.$message.error({
+            message: "获取集群失败："+ res
+          })
         });
     },
     //获取文件上传记录
     GetUploadHistory() {
-      console.log("filterName: ", this.fileName);
+      // console.log("filterName: ", this.fileName);
       this.getUploadHistoryData.filterName = this.fileName;
       this.getUploadHistoryData.clusterName = this.cluName;
       this.getUploadHistoryData.page = this.currentPageu;
       this.getUploadHistoryData.limit = this.pagesizeu;
       getUploadHistory(this.getUploadHistoryData)
         .then((res) => {
-          console.log("获取到：", res.data);
+          // console.log("获取到：", res.data);
           this.uploadHistory = res.data;
           this.uploadTotal = res.total;
         })
@@ -1035,7 +1037,7 @@ export default {
       this.podinfo.path = this.file_path;
       this.podinfo.clusterName = this.cluName;
       // this.file_path = "";
-      console.log("podinfo", this.podinfo);
+      // console.log("podinfo", this.podinfo);
       let filename = this.podinfo.path.split("/").pop();
       if (filename.includes(".")) {
         filename = filename.split(".")[0];
@@ -1115,10 +1117,10 @@ export default {
       if (this.fileFlag == 1) {
         //赋值给文件数组
         fileList.forEach((file) => {
-          console.log(`上传文件名：${file.name}`);
+          // console.log(`上传文件名：${file.name}`);
           this.filesArr.push(file.name);
         });
-        console.log("文件为：", this.filesArr);
+        // console.log("文件为：", this.filesArr);
         this.fileFlag = 0;
       }
       // 找到当前触发上传进度的文件
@@ -1143,7 +1145,7 @@ export default {
       this.paths = [];
       getContainerPath(this.podinfo, this.cluName)
         .then((res) => {
-          console.log("获取路径为：", res.data.data);
+          // console.log("获取路径为：", res.data.data);
           let arr = res.data.data.split("\n");
           let arr2 = [];
           for (let i in arr) {
@@ -1152,7 +1154,7 @@ export default {
             //判断每一行的第一段是否以d为开头，如果是则说明是目录
             if (path == "/") {
               if (arr2[0].startsWith("d")) {
-                console.log("目录为：", arr2[8]);
+                // console.log("目录为：", arr2[8]);
                 this.paths.push("/" + arr2[8]);
               }
             } else {
@@ -1161,7 +1163,7 @@ export default {
           }
         })
         .catch((res) => {
-          console.log("获取路径报错：", res.err);
+          // console.log("获取路径报错：", res.err);
           this.$message.error({
             message: res.err,
           });
@@ -1178,7 +1180,7 @@ export default {
         .then((res) => {
           // console.log("获取到。。。。",res.data.data)
           this.containerList = res.data.data;
-          console.log("获取到容器组：", this.containerList);
+          // console.log("获取到容器组：", this.containerList);
         })
         .catch((res) => {
           this.$message.error({
@@ -1191,7 +1193,7 @@ export default {
       this.$message.error({
         message: "文件上传失败!",
       });
-      console.error("文件上传失败：", response);
+      // console.error("文件上传失败：", response);
       this.resetData();
     },
     //移除文件
@@ -1214,7 +1216,7 @@ export default {
         this.removeFile(file);
       }, 500);
 
-      console.log("准备检查索引数组：", this.indexArr);
+      // console.log("准备检查索引数组：", this.indexArr);
 
       //将该文件的索引以值的方式存入成功索引数组中
       this.successIndexArr.push(currentIndex);
@@ -1229,7 +1231,7 @@ export default {
           this.resetData();
         }, 500);
       }
-      console.log("文件上传成功", file.name, response.msg);
+      // console.log("文件上传成功", file.name, response.msg);
     },
     //取消上传
     cancelUpload(cancelFile) {
@@ -1242,7 +1244,7 @@ export default {
       this.uploadFiles.forEach((file, index) => {
         //如果要取消的文件名与该数组某个文件莫名相同
         if (cancelFile == file.name) {
-          console.log("取消文件为：", file.name);
+          // console.log("取消文件为：", file.name);
           //则取消该文件的上传
           this.$refs.uploadRef.abort(file);
 
@@ -1253,9 +1255,9 @@ export default {
               this.indexArr.splice(j, 1);
             }
           }
-          console.log("此时索引数组为：", this.indexArr);
+          // console.log("此时索引数组为：", this.indexArr);
 
-          console.log("此时：", this.uploadFiles);
+          // console.log("此时：", this.uploadFiles);
           //去文件名数组中移除该文件名
           this.removeFile(file);
         }
@@ -1279,14 +1281,14 @@ export default {
     //实际上传文件方法
     handleSubmit() {
       this.submitUri();
-      console.log("url=", this.uploadUri);
+      // console.log("url=", this.uploadUri);
       // 在这里编写提交动作的代码
-      console.log("提交文件:", this.uploadFiles.length);
-      console.log("文件个数：", this.uploadFiles.length);
+      // console.log("提交文件:", this.uploadFiles.length);
+      // console.log("文件个数：", this.uploadFiles.length);
       // 根据条件执行表单提交
       if (this.uploadFiles.length > 0 && this.uploadFiles.length <= 5) {
         //首先获取实际文件数组中的所有文件的索引存入索引数组
-        console.log("满足条件开始上传");
+        // console.log("满足条件开始上传");
         for (let i in this.uploadFiles) {
           this.indexArr.push(i);
         }
@@ -1379,7 +1381,7 @@ export default {
         this.bashType +
         "&clusterName=" +
         this.cluName;
-      console.log("WebSocket连接为：", terminalWsUrl);
+      // console.log("WebSocket连接为：", terminalWsUrl);
       //实例化
       this.socket = new WebSocket(terminalWsUrl);
 
@@ -1402,19 +1404,19 @@ export default {
     },
     //建立连接时的方法
     socketOnOpen() {
-      console.log("打印socket：", this.socket);
+      // console.log("打印socket：", this.socket);
       this.socket.onopen = () => {
         //建立连接成功后，初始化虚拟终端
         this.initTrem();
       };
-      console.log("打印term", this.term);
+      // console.log("打印term", this.term);
     },
     //接收消息的方法
     socketOnMessage() {
       this.socket.onmessage = (msg) => {
         //接收到消息后将字符串转为对象，输出data内容
         let content = JSON.parse(msg.data);
-        console.log("ws消息：", msg.data);
+        // console.log("ws消息：", msg.data);
         //this.term.write(content.data);
         this.term.write(content.data);
       };
@@ -1481,7 +1483,7 @@ export default {
     },
     //初始化获取日志socket
     initGetLogSocket(row) {
-      console.log("准备：", row);
+      // console.log("准备：", row);
       let getlogWsUrl =
         this.k8sTerminalWs +
         "?container_name=" +
@@ -1494,7 +1496,7 @@ export default {
         "log" +
         "&clusterName=" +
         this.cluName;
-      console.log("WebSocket连接为：", getlogWsUrl);
+      // console.log("WebSocket连接为：", getlogWsUrl);
       //实例化
       this.logSocket = new WebSocket(getlogWsUrl);
 
@@ -1519,7 +1521,7 @@ export default {
       this.logSocket.onopen = () => {
         //建立连接成功后，初始化日志显示虚拟终端
         this.initLogTrem();
-        console.log("打印socket连接成功");
+        // console.log("打印socket连接成功");
       };
     },
     //log接收消息调用的方法
@@ -1588,15 +1590,15 @@ export default {
     },
     //获取namespace
     getPodNamespace() {
-      console.log("准备获取namespace:", this.cluName);
+      // console.log("准备获取namespace:", this.cluName);
       this.namespaceList = "";
       getNamespacesReq(this.cluName)
         .then((res) => {
           this.namespaceList = res.data.namespaces;
-          console.log("获取namespace成功：", this.namespaceList);
+          // console.log("获取namespace成功：", this.namespaceList);
         })
         .catch((error) => {
-          console.log("获取namespace失败：", error);
+          // console.log("获取namespace失败：", error);
           this.cluName = "";
           this.namespaceValue = "";
         });
@@ -1607,16 +1609,16 @@ export default {
       this.getPodListData.params.filter_name = this.searchValue;
       this.getPodListData.params.namespace = this.namespaceValue;
       this.getPodListData.params.page = this.currentPage;
-      console.log("当前页字：", this.getPodListData.params.page);
+      // console.log("当前页字：", this.getPodListData.params.page);
       this.getPodListData.params.limit = this.pagesize;
       getPodsReq(this.getPodListData.params, this.cluName)
         .then((res) => {
-          console.log("获取pod列表为: ", res.data);
+          // console.log("获取pod列表为: ", res.data);
           this.podList = res.data.items;
           this.podTotal = res.data.total;
         })
         .catch((res) => {
-          console.log("获取pod失败：", res.err);
+          // console.log("获取pod失败：", res.err);
           this.$message.error({
             message: res.err,
           });
@@ -1721,7 +1723,7 @@ export default {
   watch: {
     cluName: {
       handler() {
-        console.log("当前集群：", this.cluName);
+        // console.log("当前集群：", this.cluName);
         //判断是否在pod页面切换集群了
         if (this.cluName != Cookies.get("cluName")) {
           //如果切换集群了则将namespace置空，并更新cookie
@@ -1750,21 +1752,21 @@ export default {
     this.breathe();
   },
   beforeMount() {
-    console.log("当前namespace:", localStorage.getItem("namespace"));
+    // console.log("当前namespace:", localStorage.getItem("namespace"));
     //获取集群名
     this.cluName = this.$route.query.clusterName;
     if (!this.cluName) {
       this.cluName = Cookies.get("cluName");
     }
 
-    console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
+    // console.log("old: ", Cookies.get("oldCluName"), " new:", this.cluName);
     if (this.cluName != Cookies.get("oldCluName")) {
       localStorage.setItem("namespace", "");
       //存储旧集群
       Cookies.set("oldCluName", this.cluName);
     }
 
-    console.log("pod页集群名：", this.cluName);
+    // console.log("pod页集群名：", this.cluName);
 
     //加载页面时先获取localStorage中的namespace值，若获取不到则默认default，放在下拉框第一位显示
     if (

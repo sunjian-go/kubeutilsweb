@@ -26,7 +26,7 @@ let cancelFlag = false; //取消标志位
 // 获取 token
 httpClient.interceptors.request.use(
   (config) => {
-    console.log("请求：", config.url);
+    // console.log("请求：", config.url);
     if (config.url.includes("login")) {
       //当请求拦截器发现是login请求时，首先取消标志位置为false
       cancelFlag = false;
@@ -38,12 +38,12 @@ httpClient.interceptors.request.use(
     config.cancelToken = source.token;
     // if (cancelFlag && !config.url.includes("authformula")) {
     if (cancelFlag) {
-        console.log("取消该请求。。。", config.url);
+        // console.log("取消该请求。。。", config.url);
         //取消该请求
         source.cancel();
     }
 
-    console.log("后端地址为：", config.baseURL);
+    // console.log("后端地址为：", config.baseURL);
     //添加header
     config.headers["Content-Type"] = "application/json";
     config.headers["Accept-Language"] = "zh-CN";
@@ -53,14 +53,14 @@ httpClient.interceptors.request.use(
     }
     //
     // config.headers["Name"] = "etan";
-    console.log("准备请求token为：", config.headers["Authorization"]);
+    // console.log("准备请求token为：", config.headers["Authorization"]);
     if (config.method == "post") {
       if (!config.data) {
         // 没有参数时，config.data为null，需要转下类型
         config.data = {};
       }
     }
-    console.log("请求: ", config);
+    // console.log("请求: ", config);
     return config;
   },
   (err) => {
@@ -72,7 +72,7 @@ httpClient.interceptors.request.use(
 //添加响应拦截器
 httpClient.interceptors.response.use(
   (response) => {
-    console.log("打印response: ", response);
+    // console.log("打印response: ", response);
     if (response.status !== 200) {
       console.log("请求失败，错误状态码：", response.status);
       console.log("错误信息：", response.data);
