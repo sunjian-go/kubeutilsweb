@@ -22,7 +22,6 @@ const routes = [
   {
     path: "/home",
     component: Layout,
-    icon: "odometer",
     children: [
       //配置子页面
       {
@@ -54,6 +53,24 @@ const routes = [
         icon: "Watermelon", //图标
         meta: { title: "Pod", requireAuth: true },
         component: () => import("@/views/pod/Pod.vue"), //视图组件
+      },
+    ],
+  },
+  {
+    path: "/user",
+    component: Layout,
+    children: [
+      //配置子页面
+      {
+        path: "/user", //视图,访问子页面的时候会带上layout布局页面
+        name: "用户管理",
+        icon: "User", //图标
+        meta: {
+          title: "用户管理",
+          requireAuth: true,
+          role: localStorage.getItem("username"),
+        },
+        component: () => import("@/views/user/user.vue"), //视图组件
       },
     ],
   },

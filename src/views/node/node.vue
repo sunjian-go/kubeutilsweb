@@ -14,7 +14,7 @@
                 <el-row :gutter="10">
                   <el-col :span="10">
                     <div>
-                      <span>集群：</span>
+                      <span style="font-weight: bold">集群：</span>
                       <el-select
                         v-model="cluName"
                         placeholder="请选择"
@@ -145,8 +145,9 @@
                         <el-dropdown-menu>
                           <el-dropdown-item
                             @click="
-                              nodeinfo_dialog = true;
-                              getNodeDetail(scope.row.metadata.name);
+                              functionAuth('node_detail')
+                                ? getNodeDetail(scope.row.metadata.name)
+                                : _
                             "
                             >节点详情
                             <svg
@@ -168,11 +169,12 @@
                           </el-dropdown-item>
                           <el-dropdown-item
                             @click="
-                              packet_dialog = true;
-                              getInterfaces(
-                                scope.row.status.addresses[0].address
-                              );
-                              nodename = scope.row.metadata.name;
+                              functionAuth('packet')
+                                ? getInterfaces(
+                                    scope.row.status.addresses[0].address,
+                                    scope.row.metadata.name
+                                  )
+                                : _
                             "
                             >抓包操作
                             <svg
@@ -205,9 +207,13 @@
                           </el-dropdown-item>
                           <el-dropdown-item
                             @click="
-                              icmp_dialog = true;
-                              getHost(scope.row.status.addresses[0].address);
-                              nodename = scope.row.metadata.name;
+                              functionAuth('icmp')
+                                ? getHost(
+                                    scope.row.status.addresses[0].address,
+                                    scope.row.metadata.name,
+                                    'icmp'
+                                  )
+                                : _
                             "
                             >ping测试
                             <svg
@@ -230,9 +236,13 @@
                           </el-dropdown-item>
                           <el-dropdown-item
                             @click="
-                              port_dialog = true;
-                              getHost(scope.row.status.addresses[0].address);
-                              nodename = scope.row.metadata.name;
+                              functionAuth('port')
+                                ? getHost(
+                                    scope.row.status.addresses[0].address,
+                                    scope.row.metadata.name,
+                                    'port'
+                                  )
+                                : _
                             "
                             >端口测试
                             <svg
@@ -399,7 +409,7 @@
                   <!-- 系统信息 -->
                   <el-col :span="24">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" >
+                      <el-collapse v-model="activeNames">
                         <el-collapse-item name="1">
                           <template #title>
                             <span style="font-size: 16px">系统信息</span>
@@ -434,7 +444,7 @@
                   <!-- 标签 -->
                   <el-col :span="24" style="transform: translateY(10px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" >
+                      <el-collapse v-model="activeNames">
                         <el-collapse-item name="2">
                           <template #title>
                             <span style="font-size: 16px">标签</span>
@@ -471,7 +481,7 @@
                   <!-- 注释 -->
                   <el-col :span="24" style="transform: translateY(20px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" >
+                      <el-collapse v-model="activeNames">
                         <el-collapse-item name="3">
                           <template #title>
                             <span style="font-size: 16px">注释</span>
@@ -506,7 +516,7 @@
                   <!-- Taints -->
                   <el-col :span="24" style="transform: translateY(30px)">
                     <el-card shadow="never">
-                      <el-collapse v-model="activeNames" >
+                      <el-collapse v-model="activeNames">
                         <el-collapse-item name="4">
                           <template #title>
                             <span style="font-size: 16px">Taints</span>
@@ -648,27 +658,48 @@
                 </el-row>
               </div>
             </el-col>
+            <el-col :span="12">
+              <div>
+                <el-row>
+                  <el-col :span="5">
+                    <div>
+                      <span>超时时间(可选)：</span>
+                    </div>
+                  </el-col>
+                  <el-col :span="6"
+                    ><el-input style="width: 40px; margin-top: 2px" v-model="timeOut" :disabled="inputDisable" v-if="timeOut>60?timeOut=60:_"></el-input>
+                    分钟</el-col
+                  >
+                  <el-col :span="2">
+                    <el-icon style="margin-top:10px;margin-left:-5px" class="edit" @click="inputDisable=false"><Edit /></el-icon>
+                  </el-col>
+                  
+                </el-row>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div style="text-align: right; margin-top: 25px">
+                <el-button
+                  type="primary"
+                  text
+                  style="border-radius: 13px"
+                  size="small"
+                  :disabled="start_butdisable"
+                  @click="checkPacketData()"
+                  >开始抓包</el-button
+                >
+                <el-button
+                  text
+                  style="border-radius: 13px"
+                  type="info"
+                  size="small"
+                  :disabled="over_butdisable"
+                  @click="stoppacket()"
+                  >结束抓包</el-button
+                >
+              </div>
+            </el-col>
           </el-row>
-        </div>
-        <div style="text-align: right; margin-top: 25px">
-          <el-button
-            type="primary"
-            text
-            style="border-radius: 13px"
-            size="small"
-            :disabled="start_butdisable"
-            @click="checkPacketData()"
-            >开始抓包</el-button
-          >
-          <el-button
-            text
-            style="border-radius: 13px"
-            type="info"
-            size="small"
-            :disabled="over_butdisable"
-            @click="stoppacket()"
-            >结束抓包</el-button
-          >
         </div>
       </el-card>
     </div>
@@ -1030,19 +1061,27 @@
 </template>
 <script>
 import { getAllClusters } from "@/api/cluster/cluster";
+import { GetGroup } from "@/api/group/group";
 import {
-getInterface,
-icmpFunc,
-portFunc,
-startPacket,
-stopPacket,
+  getInterface,
+  icmpFunc,
+  portFunc,
+  startPacket,
+  stopPacket,
 } from "@/api/interface/interface";
 import { getNodeDetailsReq, getNodesReq } from "@/api/nodes/nodes";
+import { GetRole } from "@/api/role/role";
+import { GetUser } from "@/api/user/user";
 import Cookies from "js-cookie";
 export default {
   data() {
     return {
-      background:false,
+      inputDisable: true,
+      getOneGroupData: {},
+      getOneUserData: {},
+      getOneRoleData: {},
+      getOneRoleAuthArr: [],
+      background: false,
       nodename: "",
       portinfo: "端口连通性测试：",
       icmpinfo: "icmp连通性测试：",
@@ -1084,6 +1123,7 @@ export default {
         netName: "any", //默认值
         ip: "",
         port: "",
+        timeOut: "10",
       },
       nets: [],
       host: "",
@@ -1141,9 +1181,80 @@ export default {
       activeNames: ["1"],
       nodeName: "",
       portshow: false,
+      timeOut:"10",
     };
   },
   methods: {
+    async getUserAuthInfo() {
+      let username = localStorage.getItem("username");
+
+      // 获取用户数据
+      await this.getUser(username);
+      console.log("用户名： ", this.getOneUserData);
+
+      // 获取用户组
+      await this.getGroup(this.getOneUserData.groupName);
+      console.log("用户组: ", this.getOneUserData.groupName);
+
+      // 获取角色数据
+      await this.getFilterRole(this.getOneGroupData.role);
+      console.log("role: ", this.getOneGroupData.role);
+    },
+    //功能鉴权
+    functionAuth(opt) {
+      if (localStorage.getItem("username") == "admin") {
+        return true;
+      }
+      for (let i in this.getOneRoleAuthArr) {
+        if (opt == this.getOneRoleAuthArr[i]) {
+          return true;
+        }
+      }
+      this.$message.error({
+        message: "此功能暂未开放当前用户，请联系管理员",
+      });
+      return false;
+    },
+    //获取单条role
+    async getFilterRole(role) {
+      await GetRole(role)
+        .then((res) => {
+          console.log("获取到:", res);
+          this.getOneRoleData = res.data;
+          this.getOneRoleAuthArr = this.getOneRoleData.auth.split(",");
+        })
+        .catch((res) => {
+          //   console.log("报错为:", res.err);
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
+    //获取单条用户信息
+    async getUser(user) {
+      await GetUser(user)
+        .then((res) => {
+          this.getOneUserData = res.data;
+          console.log("用户信息：", this.getOneUserData);
+        })
+        .catch((res) => {
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
+    //获取单个用户组
+    async getGroup(group) {
+      await GetGroup(group)
+        .then((res) => {
+          this.getOneGroupData = res.data;
+        })
+        .catch((res) => {
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
     pingReset() {
       this.icmpdata = {
         max: "0.00",
@@ -1225,6 +1336,7 @@ export default {
     },
     //node详情
     getNodeDetail(nodeName) {
+      this.nodeinfo_dialog = true;
       this.nodeName = nodeName;
       // return
       getNodeDetailsReq(this.cluName, this.nodeName)
@@ -1265,8 +1377,8 @@ export default {
         .catch((res) => {
           // console.log("报错为：", res.err);
           this.$message.error({
-            message:res.err
-          })
+            message: res.err,
+          });
         });
     },
     portClose() {
@@ -1282,11 +1394,10 @@ export default {
     },
     //端口连通性数据检测
     portCheckData() {
+      const regex = /^[0-9]+$/;
       if (this.portData.ip != "" && this.portData.tcpPort != "") {
-        const regex = /^[0-9]+$/;
         if (regex.test(this.portData.tcpPort)) {
           if (this.portData.tcpPort <= 65535) {
-            // this.startpacket();
             this.portfunc();
           }
         } else {
@@ -1369,9 +1480,18 @@ export default {
       };
     },
     //获取地址
-    getHost(ip) {
+    getHost(ip, node, opt) {
+      this.nodename = node;
       this.host = ip;
       this.host = this.host + ":8888";
+      switch (opt) {
+        case "icmp":
+          this.icmp_dialog = true;
+          break;
+        case "port":
+          this.port_dialog = true;
+          break;
+      }
     },
     //icmp数据检查
     icmpCheckData() {
@@ -1421,14 +1541,31 @@ export default {
     checkPacketData() {
       if (this.packetData.ip != "" || this.packetData.port != "") {
         const regex = /^[0-9]+$/;
-        if (regex.test(this.packetData.port)) {
-          if (this.packetData.port <= 65535) {
-            this.startpacket();
+        const regexs = /-/;
+        if (regexs.test(this.packetData.port)) {
+          // if(this.portData.tcpPort.includes("-")){
+          console.log("带-");
+          let portarr = this.packetData.port.split("-");
+          if (regex.test(portarr[0]) && regex.test(portarr[1])) {
+            if (portarr[0] <= 65535 && portarr[1] <= 65535) {
+              this.startpacket();
+            }
+          } else {
+            this.portStatus = 0;
+            this.$message.error({
+              message: "端口必须为数字",
+            });
           }
         } else {
-          this.$message.error({
-            message: "端口必须为数字",
-          });
+          if (regex.test(this.packetData.port)) {
+            if (this.packetData.port <= 65535) {
+              this.startpacket();
+            }
+          } else {
+            this.$message.error({
+              message: "端口必须为数字",
+            });
+          }
         }
       } else {
         this.$message.error({
@@ -1442,6 +1579,7 @@ export default {
     startpacket() {
       this.over_butdisable = false;
       this.start_butdisable = true;
+      this.packetData.timeOut=(this.timeOut*60).toString();
       startPacket(this.cluName, this.host, this.packetData)
         .then((res) => {
           this.$message.success({
@@ -1492,7 +1630,9 @@ export default {
         });
     },
     //获取所有网卡
-    getInterfaces(ip) {
+    getInterfaces(ip, node) {
+      this.packet_dialog = true;
+      this.nodename = node;
       this.host = ip + ":8888";
       getInterface(this.cluName, this.host)
         .then((res) => {
@@ -1506,12 +1646,19 @@ export default {
         });
     },
     resetPackData() {
-      this.packetData.netName = "any";
-      this.packetData.ip = "";
-      this.packetData.port = "";
+      this.packetData= {
+        netName: "any", //默认值
+        ip: "",
+        port: "",
+        timeOut: "10",
+        
+      },
+      this.timeOut= "10",
       this.over_butdisable = true;
       this.start_butdisable = false;
       this.host = "";
+      this.inputDisable=true
+      this.nets=""
     },
     packetClose() {
       this.packet_dialog = false;
@@ -1560,8 +1707,8 @@ export default {
         })
         .catch((res) => {
           this.$message.error({
-            message:"获取集群失败："+ res.err
-          })
+            message: "获取集群失败：" + res.err,
+          });
           // console.error("获取集群失败：", res.err);
         });
     },
@@ -1623,6 +1770,7 @@ export default {
     // console.log("node页集群名：", this.cluName);
     this.getAllClus();
     this.getNodes();
+    this.getUserAuthInfo();
   },
 };
 </script>
@@ -1735,5 +1883,12 @@ export default {
   width: 200px;
   font-size: 11px;
   color: red;
+}
+.edit:hover {
+  opacity: 0.7;
+  cursor: pointer;
+}
+.edit:active {
+  opacity: 1;
 }
 </style>

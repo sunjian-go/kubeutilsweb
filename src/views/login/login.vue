@@ -139,11 +139,11 @@ export default {
     },
     //登录方法
     handleLogin() {
-      console.log("准备登录：", this.loginData);
+      // console.log("准备登录：", this.loginData);
       this.loginData.formula = this.viewCode;
       login(this.loginData)
         .then((res) => {
-          console.log("登陆成功了");
+          // console.log("登陆成功了");
           //账号密码校验成功后的一系列操作
           localStorage.setItem("username", this.loginData.username);
           localStorage.setItem(

@@ -1,7 +1,7 @@
 <template>
-  <div style="height: 600px; padding-left: 15px" class="scrollable">
+  <div style="height: 650px; padding-left: 15px" class="scrollable">
     <el-row>
-      <el-col :span="23">
+      <el-col :span="22">
         <div>
           <el-row>
             <div v-for="(data, i) in clus" :key="i">
@@ -11,7 +11,7 @@
                   style="
                     margin-left: 10px;
                     height: 180px;
-                    width: 370px;
+                    width: 355px;
                     border-radius: 15px;
                     background-color: rgb(230, 240, 247);
                   "
@@ -155,10 +155,14 @@
           </el-row>
         </div>
       </el-col>
-      <el-col :span="1">
-        <el-button style="margin-top: 5px" round @click="cluster_dialog = true"
+      <el-col :span="2">
+        <div style="margin-left:50px">
+        <el-button style="margin-top: 5px" circle @click="cluster_dialog = true"
           ><el-icon><Plus /></el-icon
         ></el-button>
+        <el-button circle  style="margin-top: 5px" @click="searchdrawer = true" 
+          ><el-icon><Search /></el-icon
+        ></el-button></div>
       </el-col>
     </el-row>
     <el-empty
@@ -186,7 +190,7 @@
     v-model="cluster_dialog"
     title="添加集群"
     width="40%"
-    style="border-radius: 15px;margin-top:50px"
+    style="border-radius: 15px; margin-top: 50px"
   >
     <div>
       <span style="font-weight: bold">部署agent服务（仅需部署一个节点）</span
@@ -237,8 +241,7 @@
             <span>[agent]</span><br />
             <span>cluster_name = test #地市名</span><br />
             <span>agent_addr = 2.2.2.2 #实际暴露出去的地址</span><br />
-            <span
-              >port = 8081 #实际暴露出去的端口(service的端口也要同步改)</span
+            <span>port = 8081 #实际暴露出去的端口(service的端口也要同步改)</span
             ><br /><br />
           </el-card>
         </div>
@@ -280,7 +283,8 @@
           </svg> </el-button
         ><br />
       </div>
-      <br><span style="font-weight: bold">部署抓包插件（集群中每个节点都需要部署）</span
+      <br /><span style="font-weight: bold"
+        >部署抓包插件（集群中每个节点都需要部署）</span
       ><br /><br />
       <span>在每个节点执行以下命令：</span>
       <el-input
@@ -373,6 +377,24 @@
       </el-row>
     </div>
   </el-dialog>
+  <el-drawer
+    size="300"
+    v-model="searchdrawer"
+    :with-header="false"
+    style="height: 75px; width: 20px; margin-top: 80px;margin-right:10px; border-radius: 15px"
+    :close="resetSearch()"
+  >
+    <div>
+      <el-row :gutter="5">
+        <el-col :span="18">
+          <el-input placeholder="请输入集群名" v-model="clusterName"></el-input>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="getAllClus();searchdrawer=false" >搜索</el-button>
+        </el-col>
+      </el-row>
+    </div>
+  </el-drawer>
 </template>
 <script>
 import { deleteClusters, getAllClusters } from "@/api/cluster/cluster";
@@ -381,16 +403,17 @@ import Cookies from "js-cookie";
 export default {
   data() {
     return {
+      searchdrawer: false,
       opt_dialog: false,
       host: "",
       inputcmd: "",
       inputcmdbak: "",
       inputcmd2: "kubectl apply -f kubeagent.yaml",
       inputcmdbak2: "kubectl apply -f kubeagent.yaml",
-      inputcmd3:"",
-      inputcmdbak3:"",
-      inputcmd4:"chmod +x kubepacket && nohup ./kubepacket&",
-      inputcmdbak4:"",
+      inputcmd3: "",
+      inputcmdbak3: "",
+      inputcmd4: "chmod +x kubepacket && nohup ./kubepacket&",
+      inputcmdbak4: "",
       cluster_dialog: false,
       background: "",
       disabled: false,
@@ -417,6 +440,9 @@ export default {
     };
   },
   methods: {
+    resetSearch(){
+      this.clusterName=""
+    },
     yamlUrl() {
       this.inputcmd =
         "curl -o kubeagent.yaml http://" + this.host + "/yaml/kubeagent.yaml";
@@ -430,7 +456,7 @@ export default {
         "curl -o kubepacket http://" + this.host + "/plugin/kubepacket";
     },
     copyToClipboard(ref) {
-      let inputElement = this.$refs[ref]
+      let inputElement = this.$refs[ref];
       inputElement.select(); // 选择输入框中的文本内容
       document.execCommand("copy"); // 执行复制操作
       // inputElement.setSelectionRange(0, 0);
@@ -575,8 +601,8 @@ export default {
         })
         .catch((res) => {
           this.$message.error({
-            message: "获取集群失败："+ res
-          })
+            message: "获取集群失败：" + res,
+          });
           // console.error("获取集群失败：", res.err);
         });
     },
@@ -590,7 +616,7 @@ export default {
     this.host = window.location.host;
     // console.log("当前页面地址", this.host);
     this.yamlUrl();
-    this.plugUrl()
+    this.plugUrl();
   },
 };
 </script>
@@ -611,7 +637,7 @@ export default {
 .scrollable {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 600px; /* 设置最大高度 */
+  max-height: 650px; /* 设置最大高度 */
 }
 .online {
   margin-top: 8.5px;

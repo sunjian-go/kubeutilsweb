@@ -14,7 +14,7 @@
                 <el-row :gutter="10">
                   <el-col :span="10">
                     <div>
-                      <span>集群：</span>
+                      <span style="font-weight: bold">集群：</span>
                       <el-select
                         v-model="cluName"
                         placeholder="请选择"
@@ -31,7 +31,7 @@
                   </el-col>
                   <el-col :span="14">
                     <div>
-                      <span>命名空间：</span>
+                      <span style="font-weight: bold">命名空间：</span>
                       <!-- filterable: 可以输入 -->
                       <el-select
                         v-model="namespaceValue"
@@ -190,9 +190,9 @@
                         <el-dropdown-menu>
                           <el-dropdown-item
                             @click="
-                              termal_dialog = true;
-                              initSocket(scope.row);
-                              podname=scope.row.metadata.name;
+                              functionAuth('shell')
+                                ? initSocket(scope.row, scope.row.metadata.name)
+                                : _
                             "
                             >执行命令行
                             <svg
@@ -219,9 +219,12 @@
                           </el-dropdown-item>
                           <el-dropdown-item
                             @click="
-                              log_dialog = true;
-                              initGetLogSocket(scope.row);
-                              podname=scope.row.metadata.name;
+                              functionAuth('log')
+                                ? initGetLogSocket(
+                                    scope.row,
+                                    scope.row.metadata.name
+                                  )
+                                : _
                             "
                             >查看日志
                             <svg
@@ -250,9 +253,7 @@
                           <el-dropdown-item
                             :disabled="disabled_upload"
                             @click="
-                              dialogVisible = true;
-                              disabled_upload = true;
-                              getcontainers(scope.row);
+                              functionAuth('upload') ? getcontainers(scope.row) : _
                             "
                             >上传文件
                             <svg
@@ -335,7 +336,7 @@
   <!-- 上传文件dialog -->
   <el-dialog
     v-model="dialogVisible"
-    title="上传文件到容器内"
+    :title="uploadinfo + podname"
     width="30%"
     :before-close="dia_close"
     :close-on-click-modal="false"
@@ -501,7 +502,7 @@
   <!-- 命令行dialog -->
   <el-dialog
     v-model="termal_dialog"
-    :title=termshow+podname
+    :title="termshow + podname"
     width="80%"
     style="
       height: 800px;
@@ -566,7 +567,7 @@
   <!-- 日志dialog -->
   <el-dialog
     v-model="log_dialog"
-    :title=logshow+podname
+    :title="logshow + podname"
     width="80%"
     style="
       height: 800px;
@@ -784,11 +785,11 @@ import common from "../common/Config";
 // 引入css和js是为了该组件的外观展示
 import { getNamespacesReq } from "@/api/namespace/namespace";
 import {
-downloadFile,
-getContainerPath,
-getContainersReq,
-getPodsReq,
-getUploadHistory,
+  downloadFile,
+  getContainerPath,
+  getContainersReq,
+  getPodsReq,
+  getUploadHistory,
 } from "@/api/pod/pod";
 import "xterm/css/xterm.css";
 import "xterm/lib/xterm.js";
@@ -797,13 +798,21 @@ import { getAllClusters } from "@/api/cluster/cluster";
 import Cookies from "js-cookie";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
+import { GetGroup } from "@/api/group/group";
+import { GetRole } from "@/api/role/role";
+import { GetUser } from "@/api/user/user";
 
 export default {
   data() {
     return {
-      podname:"",
-      termshow:"命令行：",
-      logshow:"日志：",
+      getOneGroupData: {},
+      getOneUserData: {},
+      getOneRoleData: {},
+      getOneRoleAuthArr: [],
+      podname: "",
+      termshow: "命令行：",
+      logshow: "日志：",
+      uploadinfo: "文件传输：",
       uploadHistory: [],
       opacity: 1,
       download_info: "",
@@ -967,6 +976,76 @@ export default {
     };
   },
   methods: {
+    async getUserAuthInfo() {
+      let username = localStorage.getItem("username");
+
+      // 获取用户数据
+      await this.getUser(username);
+      console.log("用户名： ", this.getOneUserData);
+
+      // 获取用户组
+      await this.getGroup(this.getOneUserData.groupName);
+      console.log("用户组: ", this.getOneUserData.groupName);
+
+      // 获取角色数据
+      await this.getFilterRole(this.getOneGroupData.role);
+      console.log("role: ", this.getOneGroupData.role);
+    },
+    //功能鉴权
+    functionAuth(opt) {
+      if (localStorage.getItem("username") == "admin") {
+        return true;
+      }
+      for (let i in this.getOneRoleAuthArr) {
+        if (opt == this.getOneRoleAuthArr[i]) {
+          return true;
+        }
+      }
+      this.$message.error({
+        message: "此功能暂未开放当前用户，请联系管理员",
+      });
+      return false;
+    },
+    //获取单条role
+    async getFilterRole(role) {
+      await GetRole(role)
+        .then((res) => {
+          console.log("获取到:", res);
+          this.getOneRoleData = res.data;
+          this.getOneRoleAuthArr = this.getOneRoleData.auth.split(",");
+        })
+        .catch((res) => {
+          //   console.log("报错为:", res.err);
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
+    //获取单条用户信息
+    async getUser(user) {
+     await GetUser(user)
+        .then((res) => {
+          this.getOneUserData = res.data;
+          console.log("用户信息：", this.getOneUserData);
+        })
+        .catch((res) => {
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
+    //获取单个用户组
+    async getGroup(group) {
+      await GetGroup(group)
+        .then((res) => {
+          this.getOneGroupData = res.data;
+        })
+        .catch((res) => {
+          this.$message.error({
+            message: res.err,
+          });
+        });
+    },
     resetUp() {
       this.history_dialog = false;
       this.fileName = "";
@@ -986,8 +1065,8 @@ export default {
         .catch((res) => {
           // console.error("获取集群失败：", res.err);
           this.$message.error({
-            message: "获取集群失败："+ res
-          })
+            message: "获取集群失败：" + res,
+          });
         });
     },
     //获取文件上传记录
@@ -1170,8 +1249,11 @@ export default {
         });
     },
     getcontainers(row) {
+      this.dialogVisible = true;
+      this.disabled_upload = true;
       this.podinfo.podName = row.metadata.name;
       this.podinfo.namespace = row.metadata.namespace;
+      this.podname = this.podinfo.podName;
       const pod = {
         name: row.metadata.name,
         namespace: row.metadata.namespace,
@@ -1362,7 +1444,9 @@ export default {
       this.socket.send(JSON.stringify(msgOrder2));
     },
     //初始化终端用的websocket
-    initSocket(row) {
+    initSocket(row, podname) {
+      this.termal_dialog = true;
+      this.podname = podname;
       this.podinfo.podName = row.metadata.name;
       this.podinfo.namespace = row.metadata.namespace;
       this.podinfo.containerName = row.spec.containers[0].name;
@@ -1482,7 +1566,9 @@ export default {
       this.logTerm.focus();
     },
     //初始化获取日志socket
-    initGetLogSocket(row) {
+    initGetLogSocket(row, podname) {
+      this.log_dialog = true;
+      this.podname = podname;
       // console.log("准备：", row);
       let getlogWsUrl =
         this.k8sTerminalWs +
@@ -1532,7 +1618,6 @@ export default {
         this.containerLog = content.data;
         // console.log("ws获取到：", this.containerLog);
         this.logTerm.write(this.containerLog);
-
       };
     },
     //log报错时调用的方法
@@ -1783,12 +1868,14 @@ export default {
     }
     //获取所有集群
     this.getAllClus();
+    this.getUserAuthInfo();
   },
   beforeUnmount() {
     if (this.socket != null) {
       console.log("开始关闭websocket");
       this.socket.close();
     }
+    
   },
 };
 </script>
